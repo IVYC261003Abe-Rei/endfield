@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>アークナイツ：エンドフィールド 公式サイト風</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="snap-container">
+
+    <section id="top" class="snap-section top-section">
+      <nav class="top-nav">
+        <a href="#top">01 TOP</a>
+        <a href="#pv">02 PV</a>
+        <a href="#lore">03 LORE</a>
+        <a href="#characters">04 CHARACTERS</a>
+      </nav>
+      <div class="hero-content">
+        <h1>ARKNIGHTS: ENDFIELD</h1>
+        <p>タロIIへようこそ</p>
+      </div>
+    </section>
+
+    <section id="pv" class="snap-section pv-section">
+      <h2>PROMOTION VIDEO</h2>
+      </section>
+
+    <section id="lore" class="snap-section lore-view">
+      <div class="lore-header">
+        <div class="lore-icon-group">
+          <span class="grid-icon"></span>
+          <div class="lore-title-wrap">
+            <span class="lore-en">LORE</span>
+            <h1 class="lore-ja">世界観</h1>
+          </div>
+        </div>
+      </div>
+
+      <div class="lore-canvas-wrapper">
+        <div class="hud-ring"></div>
+        <div class="hud-ticks"></div>
+        <canvas id="particleCanvas"></canvas>
+      </div>
+
+      <div class="lore-info-panel">
+        <h2 id="js-en-title" class="lore-main-title">DIJIANG</h2>
+        <p class="lore-subtitle">ARKNIGHTS, ENDFIELD</p>
+
+        <div class="lore-nav">
+          <button id="js-prev-btn" class="nav-arrow" aria-label="前へ">&lt;</button>
+          <div class="nav-status">
+            <span id="js-counter" class="counter-num">1/6</span>
+            <span id="js-ja-title" class="title-name">帝江号</span>
+          </div>
+          <button id="js-next-btn" class="nav-arrow" aria-label="次へ">&gt;</button>
+        </div>
+
+        <div class="progress-bar-wrap">
+          <div id="js-progress-bar" class="progress-bar-inner"></div>
+        </div>
+
+        <div class="lore-desc-box">
+          <p id="js-desc-text">
+            帝江号は、タロIIの軌道上に位置する飛行ユニットで、エンドフィールド工業の拠点として機能している。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="characters" class="snap-section chara-section">
+      <h2>CHARACTERS</h2>
+      </section>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
