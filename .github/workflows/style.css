@@ -1,0 +1,233 @@
+/* ==========================================================================
+   LORE (世界観) 3Dパーティクルビューアー UI
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0; padding: 0;
+}
+
+:root {
+  --bg-dark: #080b0f;
+  --yellow: #ffe600;
+  --cyan: #00f0ff;
+  --text-main: #ffffff;
+  --text-sub: #8fa3b3;
+  --border-line: rgba(255, 255, 255, 0.15);
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: 'Consolas', 'Courier New', sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  /* 背景の方眼グリッド */
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ビューアー全体レイアウト */
+.lore-view {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40px 60px;
+}
+
+/* 左上ヘッダー */
+.lore-header {
+  position: absolute;
+  top: 40px;
+  left: 60px;
+  z-index: 10;
+}
+
+.lore-icon-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.grid-icon {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--yellow);
+  background: repeating-linear-gradient(45deg, var(--yellow) 0, var(--yellow) 2px, transparent 0, transparent 6px);
+}
+
+.lore-en {
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  color: var(--yellow);
+  display: block;
+}
+
+.lore-ja {
+  font-size: 1.5rem;
+  letter-spacing: 3px;
+  font-weight: 900;
+}
+
+/* 中央：3Dパーティクル ＆ HUDリング */
+.lore-canvas-wrapper {
+  position: absolute;
+  left: 42%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 520px;
+  height: 520px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#particleCanvas {
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+/* 外周円形HUD */
+.hud-ring {
+  position: absolute;
+  width: 440px;
+  height: 440px;
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  z-index: 1;
+  animation: spinRing 60s linear infinite;
+}
+
+.hud-ticks {
+  position: absolute;
+  width: 480px;
+  height: 480px;
+  border: 2px solid transparent;
+  border-top-color: rgba(255, 230, 0, 0.4);
+  border-bottom-color: rgba(255, 230, 0, 0.4);
+  border-radius: 50%;
+  z-index: 1;
+}
+
+@keyframes spinRing {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 右側パネル */
+.lore-info-panel {
+  position: relative;
+  z-index: 10;
+  margin-left: auto;
+  width: 420px;
+  background: rgba(10, 15, 22, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-line);
+  padding: 36px 30px;
+}
+
+.lore-main-title {
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: 3px;
+  line-height: 1;
+  color: #fff;
+  transition: opacity 0.3s;
+}
+
+.lore-subtitle {
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  color: var(--text-sub);
+  margin-top: 6px;
+  margin-bottom: 24px;
+}
+
+/* カルーセルナビ */
+.lore-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-line);
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.nav-arrow {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 12px;
+  transition: color 0.2s;
+}
+
+.nav-arrow:hover {
+  color: var(--yellow);
+}
+
+.nav-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.counter-num {
+  font-size: 0.8rem;
+  color: var(--yellow);
+  font-weight: bold;
+}
+
+.title-name {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* プログレスバー */
+.progress-bar-wrap {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  margin-bottom: 24px;
+}
+
+.progress-bar-inner {
+  height: 100%;
+  width: 16.66%;
+  background-color: var(--yellow);
+  transition: width 0.3s ease, margin-left 0.3s ease;
+}
+
+/* 詳細テキスト */
+.lore-desc-box {
+  font-size: 0.88rem;
+  line-height: 1.8;
+  color: #d1e0ec;
+  min-height: 120px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 900px) {
+  .lore-view {
+    flex-direction: column;
+    justify-content: center;
+    padding: 20px;
+  }
+  .lore-canvas-wrapper {
+    position: relative;
+    left: auto; top: auto;
+    transform: none;
+    width: 320px; height: 320px;
+    margin-bottom: 20px;
+  }
+  .hud-ring { width: 280px; height: 280px; }
+  .hud-ticks { width: 300px; height: 300px; }
+  .lore-info-panel { width: 100%; }
+}
