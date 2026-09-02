@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARKNIGHTS: ENDFIELD - TACTICAL TERMINAL</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="snap-container">
+
+    <section id="hero" class="snap-section hero-section">
+      <div class="top-bar">
+        <div class="sys-info">
+          <span>SYS_VER 4.2.09 // TALO-II</span>
+          <span class="brand-yellow">ENDFIELD INDUSTRIES</span>
+          <h1>アークナイツ：エンドフィールド</h1>
+        </div>
+        <div class="top-nav-group">
+          <div class="coord-info">LAT: 34°12'N LON: 138°45'E</div>
+          <nav class="top-nav">
+            <a href="#hero"><span class="num">01</span> OVERVIEW</a>
+            <a href="#pv"><span class="num">02</span> PV DATA</a>
+            <a href="#characters"><span class="num">03</span> OPERATORS</a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="hero-body">
+        <div class="hazard-badge">
+          <span class="dot-red"></span> HAZARD LEVEL 4 : TALO-II EXPLORATION
+        </div>
+        <h2 class="hero-title">ARKNIGHTS: ENDFIELD</h2>
+        <p class="hero-desc">
+          天災の爪痕残る未開惑星「タロII」。<br>
+          エンドフィールド工業の【管理人】となり、未知なるフロンティアを切り開け。
+        </p>
+        
+        <div class="hero-actions">
+          <a href="#characters" class="btn btn-yellow">OPERATOR DATABASE &rarr;</a>
+          <a href="#pv" class="btn btn-outline">AIC PROTOCOL</a>
+        </div>
+
+        <div class="sensor-panel">
+          <div class="sensor-item">
+            <span class="sensor-label">SURFACE TEMP</span>
+            <span class="sensor-value">-14.2 °C</span>
+          </div>
+          <div class="sensor-item">
+            <span class="sensor-label">ORIGINIUM CONCENTRATION</span>
+            <span class="sensor-value brand-yellow">0.42 PPM</span>
+          </div>
+          <div class="sensor-item">
+            <span class="sensor-label">NETWORK STATUS</span>
+            <span class="sensor-value cyan-glow">ONLINE (ENDFIELD-NET)</span>
+          </div>
+        </div>
+      </div>
+
+      <aside class="sidebar-sns">
+        <a href="#" aria-label="X (Twitter)">✕</a>
+        <a href="#" aria-label="YouTube">▶</a>
+        <a href="#" aria-label="Discord">💬</a>
+        <a href="#" aria-label="TikTok">🎵</a>
+      </aside>
+    </section>
+
+    <section id="pv" class="snap-section pv-section">
+      <div class="section-inner">
+        <div class="section-header">
+          <span class="brand-yellow">// 02</span>
+          <h2>OFFICIAL PROMOTION VIDEO</h2>
+        </div>
+
+        <div class="pv-frame">
+          <div class="pv-container">
+            <iframe 
+              src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&loop=1&playlist=dQw4w9WgXcQ&controls=1" 
+              title="Arknights: Endfield PV" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen>
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="lore" class="snap-section lore-view">
+      <!-- 左上見出し -->
+      <div class="lore-header">
+        <div class="lore-icon-group">
+          <span class="grid-icon"></span>
+          <div class="lore-title-wrap">
+            <span class="lore-en">LORE</span>
+            <h1 class="lore-ja">世界観</h1>
+          </div>
+        </div>
+      </div>
+
+      <!-- 中央：3Dパーティクル表示 & HUDリング -->
+      <div class="lore-canvas-wrapper">
+        <div class="hud-ring"></div>
+        <div class="hud-ticks"></div>
+        <canvas id="particleCanvas"></canvas>
+      </div>
+
+      <!-- 右側：テキスト・コントロール情報パネル -->
+      <div class="lore-info-panel">
+        <h2 id="js-en-title" class="lore-main-title">DIJIANG</h2>
+        <p class="lore-subtitle">ARKNIGHTS, ENDFIELD</p>
+
+        <div class="lore-nav">
+          <button id="js-prev-btn" class="nav-arrow" aria-label="前へ">&lt;</button>
+          <div class="nav-status">
+            <span id="js-counter" class="counter-num">1/6</span>
+            <span id="js-ja-title" class="title-name">帝江号</span>
+          </div>
+          <button id="js-next-btn" class="nav-arrow" aria-label="次へ">&gt;</button>
+        </div>
+
+        <div class="progress-bar-wrap">
+          <div id="js-progress-bar" class="progress-bar-inner"></div>
+        </div>
+
+        <div class="lore-desc-box">
+          <p id="js-desc-text">
+            帝江号は、タロIIの軌道上に位置する飛行ユニットで、エンドフィールド工業の拠点として機能している。その中には膨大な研究設備があり、原料採掘や集成工業システムなど、多岐にわたる機能をサポートしている。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="characters" class="snap-section chara-section">
+      <div class="section-inner">
+        <div class="section-header">
+          <span class="brand-yellow">// 03</span>
+          <h2>OPERATORS LIST</h2>
+        </div>
+
+        <div class="filter-group">
+          <button class="filter-btn active" data-filter="all">ALL</button>
+          <button class="filter-btn" data-filter="補助">補助 (Supporter)</button>
+          <button class="filter-btn" data-filter="前衛">前衛 (Guard)</button>
+          <button class="filter-btn" data-filter="術師">術師 (Caster)</button>
+        </div>
+
+        <div class="card-grid">
+
+          <article class="card" data-role="補助" data-name="ギルベルタ" data-element="アーツ / サポート" data-desc="エンドフィールド所属のオペレーター。精密なアーツ制御を持ち、戦地での多角的な後方支援・戦闘補助を担当する。">
+            <div class="card-image">
+              <img src="https://via.placeholder.com/400x500/101820/ffe600?text=GILBERTA" alt="ギルベルタ" loading="lazy">
+            </div>
+            <div class="card-body">
+              <span class="badge badge-yellow">補助</span>
+              <h3>ギルベルタ</h3>
+              <p>Gilberta</p>
+            </div>
+          </article>
+
+          <article class="card" data-role="前衛" data-name="ゾアン" data-element="物理 / 近接" data-desc="前線での直接戦闘を得意とするオペレーター。優れた近接戦闘能力を有し、開拓地域の危険生物や脅威を排撃する。">
+            <div class="card-image">
+              <img src="https://via.placeholder.com/400x500/101820/00f0ff?text=ZOAN" alt="ゾアン" loading="lazy">
+            </div>
+            <div class="card-body">
+              <span class="badge badge-cyan">前衛</span>
+              <h3>ゾアン</h3>
+              <p>Zoan</p>
+            </div>
+          </article>
+
+          <article class="card" data-role="術師" data-name="イヴォンヌ" data-element="アーツ / 遠距離" data-desc="高いアーツ適性を備えた術師オペレーター。広範囲に対する強力な攻撃アーツを行使し、味方部隊の進路を切り開く。">
+            <div class="card-image">
+              <img src="https://via.placeholder.com/400x500/101820/ffe600?text=YVONNE" alt="イヴォンヌ" loading="lazy">
+            </div>
+            <div class="card-body">
+              <span class="badge badge-yellow">術師</span>
+              <h3>イヴォンヌ</h3>
+              <p>Yvonne</p>
+            </div>
+          </article>
+
+        </div>
+
+        <footer class="site-footer">
+          <p>このサイトはWeb制作学習の授業課題として制作した非営利のサイトです。作品に関する著作権・商標権等は各権利者に帰属します。</p>
+        </footer>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="modal-overlay" id="js-modal">
+    <div class="modal-content">
+      <button class="modal-close" id="js-modal-close">&times;</button>
+      <div class="modal-body">
+        <div class="modal-image">
+          <img id="js-modal-img" src="" alt="オペレーター画像">
+        </div>
+        <div class="modal-info">
+          <span class="badge badge-yellow" id="js-modal-role">ロール</span>
+          <h3 id="js-modal-name">キャラクター名</h3>
+          <p class="modal-element">攻撃属性: <span id="js-modal-element">-</span></p>
+          <hr class="cyber-divider">
+          <p id="js-modal-desc">説明文</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="audio-toggle-btn" id="js-audio-btn">
+    <span class="audio-icon">🔊</span>
+    <span class="audio-text">AUDIO ON</span>
+  </button>
+
+  <script src="script.js"></script>
+</body>
+</html>
