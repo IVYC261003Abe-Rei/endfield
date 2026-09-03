@@ -1,16 +1,11 @@
 /**
- * ARKNIGHTS: ENDFIELD - HIGH-PRECISION 3D HOLOGRAM ENGINE
- * 公式動画の質感（メッシュ接続線・加算発光・スキャン波・高精度モデル）を再現
- */
-
-/**
  * ARKNIGHTS: ENDFIELD - REAL POINT-CLOUD 3D ENGINE
- * 公式の3D点群スキャン（白〜シルバーの超高密度粒子構造）を数式で完全再現
+ * 3,200粒子の公式形状再現 ＆ レスポンシブ動的拡大エンジン
  */
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // --- 1. ロール絞り込み＆モーダル（既存機能） ---
+  // --- 1. キャラクターフィルター ＆ モーダル機能 ---
   const filterBtns = document.querySelectorAll('.filter-btn');
   const cards = document.querySelectorAll('.card');
 
@@ -31,7 +26,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (cards.length > 0 && modal) {
     cards.forEach(card => {
       card.addEventListener('click', () => {
-        document.getElementById('js-modal-img').src = card.querySelector('img').src;
+        const modalImg = document.getElementById('js-modal-img');
+        const src = card.querySelector('img') ? card.querySelector('img').src : '';
+        if (src) {
+          modalImg.src = src;
+          modalImg.style.display = 'block';
+        } else {
+          modalImg.style.display = 'none';
+        }
         document.getElementById('js-modal-role').textContent = card.getAttribute('data-role');
         document.getElementById('js-modal-name').textContent = card.getAttribute('data-name');
         document.getElementById('js-modal-element').textContent = card.getAttribute('data-element');
@@ -45,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- 2. LORE 世界観データ ---
+  // --- 2. LORE 世界観データ定義 ---
   const loreData = [
     {
       enTitle: "DIJIANG", jaTitle: "帝江号",
@@ -84,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if (canvas) {
     const ctx = canvas.getContext('2d');
-    const PARTICLE_COUNT = 3200; // 超高密度点群（公式画像準拠）
+    const PARTICLE_COUNT = 3200; // 高密度粒子
     const particles = [];
     let angleY = 0;
 
@@ -97,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // 点群パーティクルクラス
+    // 粒子クラス
     class Particle {
       constructor() {
         this.x = (Math.random() - 0.5) * 400;
@@ -108,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         this.targetZ = this.z;
         this.vx = 0; this.vy = 0; this.vz = 0;
         this.size = Math.random() * 1.2 + 0.6;
-        this.brightness = Math.random() * 0.5 + 0.5; // 個別の輝度ムラ
+        this.brightness = Math.random() * 0.5 + 0.5;
       }
 
       update() {
@@ -129,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
       particles.push(new Particle());
     }
 
-    // --- 公式画像に基く超高精度3D点群（Point Cloud）生成 ---
+    // 3D Point Cloud 形状数学モデル
     function generateShapePoints(shapeType) {
       const points = [];
 
@@ -137,150 +139,109 @@ document.addEventListener('DOMContentLoaded', () => {
         let x = 0, y = 0, z = 0;
 
         if (shapeType === 'spaceship') {
-          // 【画像1】帝江号: 前方に伸びる細長い先端＋中央巨大タワー構造＋後部エンジン
+          // 帝江号
           const section = Math.random();
           if (section < 0.45) {
-            // 前方〜艦首（鋭利に伸びるボディ）
-            const px = Math.random() * 160; // 0 ~ 160
+            const px = Math.random() * 160;
             const r = Math.pow((160 - px) / 160, 0.8) * 35;
             const a = Math.random() * Math.PI * 2;
-            x = px;
-            y = Math.sin(a) * r * 0.6;
-            z = Math.cos(a) * r;
+            x = px; y = Math.sin(a) * r * 0.6; z = Math.cos(a) * r;
           } else if (section < 0.75) {
-            // 中央構造体（縦長タワー＆垂直ブリッジ）
             x = (Math.random() - 0.5) * 60 - 20;
             y = (Math.random() - 0.5) * 110 - 20;
             z = (Math.random() - 0.5) * 45;
           } else {
-            // 後部（巨大エンジン＆ブロック）
             x = -Math.random() * 100 - 20;
             const r = (1 - Math.abs(x + 70) / 100) * 45 + 10;
             const a = Math.random() * Math.PI * 2;
-            y = Math.sin(a) * r;
-            z = Math.cos(a) * r;
+            y = Math.sin(a) * r; z = Math.cos(a) * r;
           }
         } 
         else if (shapeType === 'anchor') {
-          // 【画像2】アンカー: 上下に非常に鋭く尖ったひし形/針状ボディ
-          const h = (Math.random() - 0.5) * 320; // -160 ~ 160
+          // アンカー
+          const h = (Math.random() - 0.5) * 320;
           y = h;
-          // 中央が膨らみ端が極細になる紡錘形
           const profile = Math.pow(1 - Math.abs(h) / 160, 1.8);
           const r = profile * 45;
           const a = Math.random() * Math.PI * 2;
-          x = Math.cos(a) * r;
-          z = Math.sin(a) * r;
-
-          // 中央部のリング段差構造
-          if (Math.abs(h) < 25) {
-            x *= 1.3; z *= 1.3;
-          }
+          x = Math.cos(a) * r; z = Math.sin(a) * r;
+          if (Math.abs(h) < 25) { x *= 1.3; z *= 1.3; }
         } 
         else if (shapeType === 'cube') {
-          // 【画像3】集成工業システム: 左の手前タワー＋右奥のプラント建築群＋ベース基板
+          // AIC 集成工業
           const r = Math.random();
           if (r < 0.35) {
-            // 斜めベース基板 (メッシュ状)
-            x = (Math.random() - 0.5) * 220;
-            z = (Math.random() - 0.5) * 220;
-            y = 80 + (Math.random() - 0.5) * 6;
+            x = (Math.random() - 0.5) * 220; z = (Math.random() - 0.5) * 220; y = 80 + (Math.random() - 0.5) * 6;
           } else if (r < 0.75) {
-            // 左手前の主タワー構造（太い筒＋支持ブレース）
-            const h = Math.random() * 180 - 100; // -100 ~ 80
+            const h = Math.random() * 180 - 100;
             y = h;
             const radius = h > 30 ? 25 : 45;
             const a = Math.random() * Math.PI * 2;
-            x = -50 + Math.cos(a) * radius;
-            z = Math.sin(a) * radius;
+            x = -50 + Math.cos(a) * radius; z = Math.sin(a) * radius;
           } else {
-            // 右奥の複数のプラント・建築ブロック
             const b = Math.floor(Math.random() * 3);
-            const bx = 30 + b * 35;
-            x = bx + (Math.random() - 0.5) * 25;
+            x = 30 + b * 35 + (Math.random() - 0.5) * 25;
             y = 80 - Math.random() * (40 + b * 20);
             z = (Math.random() - 0.5) * 30;
           }
         } 
         else if (shapeType === 'pillar') {
-          // 【画像4】天師杭: 四角い基板＋太い幹＋上部に何段階も広がる巨木の枝構造
+          // 天師杭
           const r = Math.random();
           if (r < 0.25) {
-            // 土台（四角形メッシュ）
-            x = (Math.random() - 0.5) * 180;
-            z = (Math.random() - 0.5) * 180;
-            y = 110;
+            x = (Math.random() - 0.5) * 180; z = (Math.random() - 0.5) * 180; y = 110;
           } else if (r < 0.55) {
-            // ねじれた中心幹
-            const h = Math.random() * 100 + 10; // 10 ~ 110
+            const h = Math.random() * 100 + 10;
             y = h;
             const twist = h * 0.05;
             const radius = (120 - h) * 0.3;
             const a = Math.random() * Math.PI * 2;
-            x = Math.cos(a + twist) * radius;
-            z = Math.sin(a + twist) * radius;
+            x = Math.cos(a + twist) * radius; z = Math.sin(a + twist) * radius;
           } else {
-            // 上部に幾何学的に広がる大樹の枝（フラクタル風拡散）
             const branchId = Math.floor(Math.random() * 8);
             const angle = (branchId / 8) * Math.PI * 2;
             const dist = Math.random() * 110 + 20;
-            y = 10 - Math.pow(dist / 110, 0.8) * 90; // 上へ広がる
+            y = 10 - Math.pow(dist / 110, 0.8) * 90;
             x = Math.cos(angle) * dist + (Math.random() - 0.5) * 20;
             z = Math.sin(angle) * dist + (Math.random() - 0.5) * 20;
           }
         } 
         else if (shapeType === 'angel') {
-          // 【画像5】アングロス: 下部一本足＋上部にV字状に伸びる幾何学結晶翼＋周囲の浮遊片
+          // アングロス
           const r = Math.random();
           if (r < 0.25) {
-            // 下部の脚/ベースコラム
             y = Math.random() * 80 + 20;
             const radius = (100 - y) * 0.15 + 3;
             const a = Math.random() * Math.PI * 2;
-            x = Math.cos(a) * radius;
-            z = Math.sin(a) * radius;
+            x = Math.cos(a) * radius; z = Math.sin(a) * radius;
           } else if (r < 0.85) {
-            // 上部に巨大に広がるV字状の結晶翼
             const wingSide = (Math.random() < 0.5) ? 1 : -1;
             const t = Math.random();
             x = t * 130 * wingSide;
             y = -t * 90 + (Math.random() - 0.5) * 25;
             z = (Math.random() - 0.5) * (30 + t * 20);
           } else {
-            // 周囲に浮遊する破片・結晶パーティクル
-            x = (Math.random() - 0.5) * 180;
-            y = (Math.random() - 0.5) * 160 - 20;
-            z = (Math.random() - 0.5) * 100;
+            x = (Math.random() - 0.5) * 180; y = (Math.random() - 0.5) * 160 - 20; z = (Math.random() - 0.5) * 100;
           }
         } 
         else {
-          // 【画像6】ランドブレイカー: どっしり構えた重甲メカ＋右手の巨大ハンマー
+          // ランドブレイカー
           const r = Math.random();
           if (r < 0.2) {
-            // 右手の巨大ハンマー（柄と正方形の頭部）
             if (Math.random() < 0.4) {
-              // 柄
-              x = -70 + (Math.random() - 0.5) * 8;
-              y = (Math.random() - 0.5) * 120 + 10;
-              z = -20 + (Math.random() - 0.5) * 8;
+              x = -70 + (Math.random() - 0.5) * 8; y = (Math.random() - 0.5) * 120 + 10; z = -20 + (Math.random() - 0.5) * 8;
             } else {
-              // ハンマーヘッド（大きな立方体）
-              x = -70 + (Math.random() - 0.5) * 45;
-              y = 50 + (Math.random() - 0.5) * 45;
-              z = -20 + (Math.random() - 0.5) * 45;
+              x = -70 + (Math.random() - 0.5) * 45; y = 50 + (Math.random() - 0.5) * 45; z = -20 + (Math.random() - 0.5) * 45;
             }
           } else if (r < 0.5) {
-            // 開いた両脚・下半身
-            y = Math.random() * 80 + 30; // 30 ~ 110
+            y = Math.random() * 80 + 30;
             const legSide = Math.random() < 0.5 ? -1 : 1;
             x = (20 + (y - 30) * 0.3) * legSide + (Math.random() - 0.5) * 15;
             z = (Math.random() - 0.5) * 25;
           } else {
-            // 胸部・巨大な両肩スパイク・頭部
-            y = (Math.random() - 0.5) * 90 - 20; // -65 ~ 25
-            const width = (y < -30) ? 75 : 50; // 肩幅広め
-            x = (Math.random() - 0.5) * width;
-            z = (Math.random() - 0.5) * 40;
+            y = (Math.random() - 0.5) * 90 - 20;
+            const width = (y < -30) ? 75 : 50;
+            x = (Math.random() - 0.5) * width; z = (Math.random() - 0.5) * 40;
           }
         }
 
@@ -299,23 +260,25 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // --- メインアニメーション（純粋な白〜シルバーのPoint Cloud描画） ---
+    // アニメーション描画ループ
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      angleY += 0.007; // 3D回転
+      angleY += 0.007;
 
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
       const fov = 340;
 
-      // 重なり部分が自発光する加算合成（Point Cloud特有の輝度感）
+      // キャンバス最小幅に応じた動的スケーリング
+      const minDimension = Math.min(canvas.width, canvas.height);
+      const responsiveScale = Math.max(0.9, minDimension / 330);
+
       ctx.globalCompositeOperation = 'lighter';
 
       particles.forEach(p => {
         p.update();
 
-        // 3D Y軸回転計算
         const cosY = Math.cos(angleY);
         const sinY = Math.sin(angleY);
 
@@ -324,15 +287,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const ry = p.y;
 
         const scale = fov / (fov + rz + 220);
-        const screenX = centerX + rx * scale;
-        const screenY = centerY + ry * scale;
 
-        // 奥行きに応じたアルファ値・サイズ（白〜高輝度シルバー）
+        const screenX = centerX + rx * scale * responsiveScale;
+        const screenY = centerY + ry * scale * responsiveScale;
+
         const alpha = Math.min(0.9, Math.max(0.1, (rz + 180) / 320)) * p.brightness;
         ctx.fillStyle = `rgba(240, 245, 255, ${alpha})`;
 
         ctx.beginPath();
-        ctx.arc(screenX, screenY, Math.max(0.6, p.size * scale), 0, Math.PI * 2);
+        const particleSize = Math.max(0.7, p.size * scale * (responsiveScale * 0.75));
+        ctx.arc(screenX, screenY, particleSize, 0, Math.PI * 2);
         ctx.fill();
       });
 
@@ -340,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
       requestAnimationFrame(animate);
     }
 
-    // --- UIテキスト＆ゲージ更新 ---
+    // UI切り替え制御
     function updateUI(index) {
       const data = loreData[index];
       document.getElementById('js-en-title').textContent = data.enTitle;
