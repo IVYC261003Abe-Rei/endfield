@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>アークナイツ：エンドフィールド 公式サイト風</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 音声再生確認用モーダルダイアログ -->
+  <div id="pv-modal" class="pv-modal-overlay" role="dialog" aria-labelledby="pv-modal-title" aria-modal="true">
+    <div class="pv-modal-content">
+      <span class="system-tag">// AUDIO SYSTEM</span>
+      <h2 id="pv-modal-title" class="pv-modal-title">公式PV再生</h2>
+      <p class="pv-modal-message">音声付きで公式PVを再生しますか？</p>
+      
+      <!-- 操作ボタンエリア -->
+      <div class="pv-button-group">
+        <button id="btn-sound-on" class="btn btn-primary" type="button">音ありで再生</button>
+        <button id="btn-sound-off" class="btn btn-secondary" type="button">ミュートで再生</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 全画面スナップスクロール容器 -->
+  <div class="snap-container">
+
+    <!-- 第1段: TOP (メインビジュアル) -->
+    <section id="top" class="snap-section top-section">
+      <nav class="top-nav">
+        <a href="#top">01 TOP</a>
+        <a href="#pv">02 PV</a>
+        <a href="#lore">03 LORE</a>
+        <a href="#characters">04 CHARACTERS</a>
+      </nav>
+      <div class="hero-content">
+        <span class="system-tag">SYS.VER 4.2.09 // TALO-II EXPLORATION</span>
+        <h1 class="hero-title">ARKNIGHTS : ENDFIELD</h1>
+        <p class="hero-sub">天災の爪痕残る未開惑星「タロII」。エンドフィールド工業の「管理人」となり、未知なるフロンティアを切り開け。</p>
+        <div class="hero-buttons">
+          <a href="#characters" class="btn btn-primary">OPERATOR DATABASE</a>
+          <a href="#lore" class="btn btn-secondary">AIC PROTOCOL</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第2段: PV (公式プロモーション映像) -->
+    <section id="pv" class="snap-section pv-section">
+      <div class="pv-container">
+        <div class="section-title">
+          <span class="sub-label">// 02 OFFICIAL PROMOTION VIDEO</span>
+          <h2>公式プロモーション映像</h2>
+        </div>
+        <div class="video-wrapper">
+          <iframe id="pv-video"
+                  src="https://www.youtube.com/embed/EGZpPrCd7iI?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=EGZpPrCd7iI"
+                  title="公式プロモーション映像"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第3段: LORE (世界観・3D Point Cloud) -->
+    <section id="lore" class="snap-section lore-view">
+      <!-- 左上ヘッダー -->
+      <div class="lore-header">
+        <div class="lore-icon-group">
+          <span class="grid-icon"></span>
+          <div class="lore-title-wrap">
+            <span class="lore-en">LORE</span>
+            <h2 class="lore-ja">世界観</h2>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3D点群キャンバス & HUDリング -->
+      <div class="lore-canvas-wrapper">
+        <div class="hud-ring"></div>
+        <div class="hud-ticks"></div>
+        <canvas id="particleCanvas"></canvas>
+      </div>
+
+      <!-- 右側：解説・コントロールパネル -->
+      <div class="lore-info-panel">
+        <h1 id="js-en-title" class="lore-main-title">DIJIANG</h1>
+        <p class="lore-subtitle">ARKNIGHTS, ENDFIELD</p>
+
+        <div class="lore-nav">
+          <button id="js-prev-btn" class="nav-arrow" aria-label="前へ">&lt;</button>
+          <div class="nav-status">
+            <span id="js-counter" class="counter-num">1/6</span>
+            <span id="js-ja-title" class="title-name">帝江号</span>
+          </div>
+          <button id="js-next-btn" class="nav-arrow" aria-label="次へ">&gt;</button>
+        </div>
+
+        <div class="progress-bar-wrap">
+          <div id="js-progress-bar" class="progress-bar-inner"></div>
+        </div>
+
+        <div class="lore-desc-box">
+          <p id="js-desc-text">
+            帝江号は、タロIIの軌道上に位置する飛行ユニットで、エンドフィールド工業の拠点として機能している。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第4段: CHARACTERS (オペレーター一覧) -->
+    <section id="characters" class="snap-section chara-section">
+      <div class="chara-container">
+        <div class="section-title">
+          <span class="sub-label">// 03 OPERATORS LIST</span>
+          <h2>オペレーター一覧</h2>
+        </div>
+
+        <!-- 絞り込みフィルターボタン -->
+        <div class="filter-group">
+          <button class="filter-btn active" data-filter="all">ALL</button>
+          <button class="filter-btn" data-filter="補助">補助 (Supporter)</button>
+          <button class="filter-btn" data-filter="前衛">前衛 (Guard)</button>
+          <button class="filter-btn" data-filter="術師">術師 (Caster)</button>
+        </div>
+
+        <!-- オペレーターカード一覧 -->
+        <div class="operator-grid">
+          <div class="card" data-role="補助" data-name="ギルベルタ" data-element="風元素" data-desc="エンドフィールド工業の協賛スタッフ。卓越した支援スキルを持つ。">
+            <div class="card-thumb">
+              <img src="media/Gilberta1.webp" alt="ギルベルタ">
+            </div>
+            <div class="card-info">
+              <span class="role-badge">補助</span>
+              <h3>ギルベルタ</h3>
+              <p class="en-name">Gilberta</p>
+            </div>
+          </div>
+
+          <div class="card" data-role="前衛" data-name="ゾアン" data-element="物理" data-desc="近接戦闘に優れた前線部隊の精鋭オペレーター。">
+            <div class="card-thumb">
+              <img src="media/Zhuang1.webp" alt="ゾアン">
+            </div>
+            <div class="card-info">
+              <span class="role-badge">前衛</span>
+              <h3>ゾアン</h3>
+              <p class="en-name">Zoan</p>
+            </div>
+          </div>
+
+          <div class="card" data-role="術師" data-name="イヴォンヌ" data-element="氷元素" data-desc="広範囲のアーツ攻撃を展開する研究部門出身の術師。">
+            <div class="card-thumb">
+              <img src="media/Yvonne1.webp" alt="イヴォンヌ">
+            </div>
+            <div class="card-info">
+              <span class="role-badge">術師</span>
+              <h3>イヴォンヌ</h3>
+              <p class="en-name">Yvonne</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="copyright-text">
+          このサイトはWeb制作学習の授業課題として制作した比較用のサイトです。作品に関する著作権・商標権等は各権利者に帰属します。
+        </p>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- オペレーター詳細表示用モーダル構造 -->
+  <div id="js-modal" class="modal">
+    <div class="modal-content">
+      <button id="js-modal-close" class="modal-close">&times;</button>
+      <div class="modal-body">
+        <img id="js-modal-img" src="" alt="オペレーター画像" style="display:none; max-width: 100%; height: auto; margin-bottom: 12px;">
+        <span id="js-modal-role" class="role-badge"></span>
+        <h2 id="js-modal-name"></h2>
+        <p id="js-modal-element" class="element-text"></p>
+        <p id="js-modal-desc" class="desc-text"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

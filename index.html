@@ -8,6 +8,21 @@
 </head>
 <body>
 
+  <!-- 音声再生確認用モーダルダイアログ -->
+  <div id="pv-modal" class="pv-modal-overlay" role="dialog" aria-labelledby="pv-modal-title" aria-modal="true">
+    <div class="pv-modal-content">
+      <span class="system-tag">// AUDIO SYSTEM</span>
+      <h2 id="pv-modal-title" class="pv-modal-title">公式PV再生</h2>
+      <p class="pv-modal-message">音声付きで公式PVを再生しますか？</p>
+      
+      <!-- 操作ボタンエリア -->
+      <div class="pv-button-group">
+        <button id="btn-sound-on" class="btn btn-primary" type="button">音ありで再生</button>
+        <button id="btn-sound-off" class="btn btn-secondary" type="button">ミュートで再生</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 全画面スナップスクロール容器 -->
   <div class="snap-container">
 
@@ -38,11 +53,11 @@
           <h2>公式プロモーション映像</h2>
         </div>
         <div class="video-wrapper">
-          <iframe 
-            src="https://www.youtube.com/embed/EGZpPrCd7iI?rel=0" 
-            title="『アークナイツ：エンドフィールド』公式PV" 
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-            allowfullscreen>
+          <iframe id="pv-video"
+                  src="https://www.youtube.com/embed/EGZpPrCd7iI?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=EGZpPrCd7iI"
+                  title="公式プロモーション映像"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen>
           </iframe>
         </div>
       </div>
@@ -110,23 +125,23 @@
           <button class="filter-btn" data-filter="術師">術師 (Caster)</button>
         </div>
 
-        <!-- オペレーターカード一覧 -->
+        <!-- オペレーターカード一覧 (共通詳細ページへのリンク化) -->
         <div class="operator-grid">
-          <div class="card" data-role="補助" data-name="ギルベルタ" data-element="風元素" data-desc="エンドフィールド工業の協賛スタッフ。卓越した支援スキルを持つ。">
+          <a href="character.html?id=gilberta" class="card" data-role="補助">
             <span class="role-badge">補助</span>
             <h3>ギルベルタ</h3>
             <p class="en-name">Gilberta</p>
-          </div>
-          <div class="card" data-role="前衛" data-name="ゾアン" data-element="物理" data-desc="近接戦闘に優れた前線部隊の精鋭オペレーター。">
+          </a>
+          <a href="character.html?id=zoan" class="card" data-role="前衛">
             <span class="role-badge">前衛</span>
             <h3>ゾアン</h3>
             <p class="en-name">Zoan</p>
-          </div>
-          <div class="card" data-role="術師" data-name="イヴォンヌ" data-element="氷元素" data-desc="広範囲のアーツ攻撃を展開する研究部門出身の術師。">
+          </a>
+          <a href="character.html?id=yvonne" class="card" data-role="術師">
             <span class="role-badge">術師</span>
             <h3>イヴォンヌ</h3>
             <p class="en-name">Yvonne</p>
-          </div>
+          </a>
         </div>
 
         <p class="copyright-text">
@@ -135,20 +150,6 @@
       </div>
     </section>
 
-  </div>
-
-  <!-- 詳細表示用モーダル構造 -->
-  <div id="js-modal" class="modal">
-    <div class="modal-content">
-      <button id="js-modal-close" class="modal-close">&times;</button>
-      <div class="modal-body">
-        <img id="js-modal-img" src="" alt="オペレーター画像" style="display:none;">
-        <span id="js-modal-role" class="role-badge"></span>
-        <h2 id="js-modal-name"></h2>
-        <p id="js-modal-element" class="element-text"></p>
-        <p id="js-modal-desc" class="desc-text"></p>
-      </div>
-    </div>
   </div>
 
   <script src="script.js"></script>

@@ -26,7 +26,52 @@ body, html {
   overflow: hidden;
 }
 
-/* --- 2. 全画面スナップスクロール構造 --- */
+/* --- 2. 音声確認モーダルダイアログ --- */
+.pv-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 16px;
+}
+
+.pv-modal-content {
+  background-color: #0d131a;
+  border: 1px solid var(--brand-yellow);
+  padding: 32px 24px;
+  border-radius: 4px;
+  text-align: center;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.pv-modal-title {
+  font-size: 1.4rem;
+  font-weight: 900;
+  margin-bottom: 12px;
+  color: #fff;
+}
+
+.pv-modal-message {
+  font-size: 0.95rem;
+  color: var(--text-sub);
+  margin-bottom: 24px;
+}
+
+.pv-button-group {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* --- 3. 全画面スナップスクロール構造 --- */
 .snap-container {
   height: 100vh;
   overflow-y: scroll;
@@ -42,7 +87,7 @@ body, html {
   box-sizing: border-box;
 }
 
-/* --- 3. TOP (メインビジュアル) --- */
+/* --- 4. TOP (メインビジュアル) --- */
 .top-section {
   display: flex;
   flex-direction: column;
@@ -110,6 +155,9 @@ body, html {
   transition: all 0.2s;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
 }
 
 .btn-primary {
@@ -132,7 +180,7 @@ body, html {
   color: var(--brand-yellow);
 }
 
-/* --- 4. PV (プロモーションビデオ) --- */
+/* --- 5. PV (プロモーションビデオ) --- */
 .pv-section {
   display: flex;
   align-items: center;
@@ -167,20 +215,24 @@ body, html {
 .video-wrapper {
   position: relative;
   width: 100%;
-  padding-top: 56.25%; /* 16:9 アスペクト比保持 */
+  max-width: 960px;
+  margin: 0 auto;
+  aspect-ratio: 16 / 9;
   border: 1px solid var(--border-color);
   box-shadow: 0 0 30px rgba(0,0,0,0.8);
   background: #000;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 .video-wrapper iframe {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  width: 100%;
+  height: 100%;
   border: none;
+  display: block;
 }
 
-/* --- 5. LORE (3D Point Cloud View) --- */
+/* --- 6. LORE (3D Point Cloud View) --- */
 .lore-view {
   position: relative;
   width: 100%;
@@ -267,13 +319,13 @@ body, html {
   to { transform: rotate(360deg); }
 }
 
-/* 解説・コントロールパネル（位置固定＆PC大型化） */
+/* 解説・コントロールパネル */
 .lore-info-panel {
   position: relative;
   z-index: 10;
   margin-left: auto;
   width: 520px;
-  min-height: 480px; /* パネル高さ固定 */
+  min-height: 480px;
   background: var(--bg-panel);
   backdrop-filter: blur(10px);
   border: 1px solid var(--border-color);
@@ -283,14 +335,14 @@ body, html {
 }
 
 .lore-main-title {
-  font-size: 3.2rem;
+  font-size: 2.4rem;
   font-weight: 900;
-  letter-spacing: 3px;
+  letter-spacing: 2px;
   line-height: 1.1;
-  min-height: 72px; /* 位置固定 */
+  min-height: 72px;
   display: flex;
   align-items: center;
-  word-break: break-word;
+  white-space: nowrap; 
 }
 
 .lore-subtitle {
@@ -361,10 +413,10 @@ body, html {
   font-size: 0.95rem;
   line-height: 1.85;
   color: #d1e0ec;
-  min-height: 130px; /* 説明文固定 */
+  min-height: 130px;
 }
 
-/* --- 6. CHARACTERS & モーダル --- */
+/* --- 7. CHARACTERS & モーダル --- */
 .chara-section {
   display: flex;
   align-items: center;
@@ -403,7 +455,7 @@ body, html {
 
 .operator-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 16px;
   margin-bottom: 30px;
 }
@@ -411,7 +463,8 @@ body, html {
 .card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-color);
-  padding: 20px;
+  padding: 0;
+  overflow: hidden;
   cursor: pointer;
   transition: transform 0.2s, border-color 0.2s;
 }
@@ -419,6 +472,29 @@ body, html {
 .card:hover {
   transform: translateY(-4px);
   border-color: var(--brand-yellow);
+}
+
+.card-thumb {
+  width: 100%;
+  height: 240px;
+  overflow: hidden;
+  background: #000;
+}
+
+.card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform 0.3s ease;
+}
+
+.card:hover .card-thumb img {
+  transform: scale(1.05);
+}
+
+.card-info {
+  padding: 16px;
 }
 
 .role-badge {
@@ -448,7 +524,7 @@ body, html {
   text-align: center;
 }
 
-/* モーダル */
+/* オペレーター詳細モーダル */
 .modal {
   display: none;
   position: fixed;
@@ -483,7 +559,105 @@ body, html {
   cursor: pointer;
 }
 
-/* --- 7. PC大画面（1600px以上）最適化 --- */
+/* --- 8. キャラ詳細ページ (`character.html`) 用スタイル --- */
+.detail-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.back-btn {
+  color: var(--brand-yellow);
+  text-decoration: none;
+  font-size: 0.9rem;
+  display: inline-block;
+  margin-bottom: 24px;
+  transition: opacity 0.2s;
+}
+
+.back-btn:hover {
+  opacity: 0.8;
+}
+
+.detail-header {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.detail-img-wrap {
+  flex: 0 0 380px;
+}
+
+.detail-img-wrap img#js-char-img {
+  width: 100%;
+  max-height: 480px;
+  object-fit: cover;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.gallery-thumbs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.thumb-item {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s, border-color 0.2s;
+}
+
+.thumb-item:hover, .thumb-item.active {
+  opacity: 1;
+  border-color: var(--brand-yellow);
+}
+
+.detail-info {
+  flex: 1;
+}
+
+.char-en-sub {
+  color: var(--text-sub);
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.skill-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  border-radius: 4px;
+}
+
+.skill-card h3 {
+  font-size: 1rem;
+  color: var(--brand-yellow);
+  margin-bottom: 6px;
+}
+
+.skill-card p {
+  font-size: 0.88rem;
+  color: var(--text-sub);
+  line-height: 1.5;
+}
+
+/* --- 9. PC大画面（1600px以上）最適化 --- */
 @media (min-width: 1600px) {
   .lore-info-panel {
     width: 580px;
@@ -496,13 +670,14 @@ body, html {
   }
 }
 
-/* ==========================================================================
-   8. スマホ・モバイル専用レスポンシブ最適化 (@media max-width: 768px)
-   ※ 評価項目：崩れ防止、文字はみ出し防止、縦並び再配置
-   ========================================================================== */
+/* --- 10. スマホ・モバイル専用レスポンシブ最適化 --- */
 @media (max-width: 768px) {
   body, html {
     font-size: 14px;
+  }
+
+  .pv-button-group {
+    flex-direction: column;
   }
 
   .snap-container {
@@ -515,9 +690,8 @@ body, html {
     min-height: 100vh;
   }
 
-  /* TOPスマホ対応 */
   .top-nav {
-    display: none; /* スマホではシンプル化 */
+    display: none;
   }
 
   .hero-title {
@@ -532,10 +706,8 @@ body, html {
 
   .btn {
     width: 100%;
-    justify-content: center;
   }
 
-  /* LOREスマホ対応（ホログラム上、説明文下） */
   .lore-view {
     flex-direction: column;
     justify-content: flex-start;
@@ -580,9 +752,17 @@ body, html {
     min-height: auto;
   }
 
-  /* CHARACTERSスマホ対応 */
   .operator-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
+  }
+
+  .detail-header {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .detail-img-wrap {
+    flex: 1 1 100%;
   }
 }

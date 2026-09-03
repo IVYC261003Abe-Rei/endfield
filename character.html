@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="js-page-title">キャラ詳細</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container detail-container">
+    <a href="index2.html#characters" class="back-btn">&larr; 一覧に戻る</a>
+
+    <div class="detail-header">
+      <div class="detail-img-wrap">
+        <img id="js-char-img" src="" alt="メイン画像">
+        <div id="js-gallery-list" class="gallery-thumbs"></div>
+      </div>
+      <div class="detail-info">
+        <span id="js-char-rarity" class="rarity"></span>
+        <h1 id="js-char-name"></h1>
+        <p id="js-char-en" class="char-en-sub"></p>
+        <div class="tags">
+          <span id="js-char-role" class="badge"></span>
+          <span id="js-char-element" class="element"></span>
+        </div>
+        <p id="js-char-overview" class="overview"></p>
+      </div>
+    </div>
+
+    <!-- スキル一覧（動的生成） -->
+    <section class="detail-section">
+      <h2>スキル</h2>
+      <div id="js-skills-list" class="skills-grid"></div>
+    </section>
+  </div>
+
+  <!-- データと連動制御スクリプト -->
+  <script src="js/characters.js"></script>
+  <script src="js/character-detail.js"></script>
+</body>
+</html>

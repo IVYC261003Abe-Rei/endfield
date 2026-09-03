@@ -1,9 +1,45 @@
 /**
- * ARKNIGHTS: ENDFIELD - REAL POINT-CLOUD 3D ENGINE
- * 3,200粒子の公式形状再現 ＆ レスポンシブ動的拡大エンジン
+ * ARKNIGHTS: ENDFIELD - REAL POINT-CLOUD 3D ENGINE & CONTROLLER
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+
+  // --- 0. PV音声再生確認モーダル制御 ---
+  const pvModal = document.getElementById('pv-modal');
+  const pvVideo = document.getElementById('pv-video');
+  const btnSoundOn = document.getElementById('btn-sound-on');
+  const btnSoundOff = document.getElementById('btn-sound-off');
+
+  if (pvModal && pvVideo && btnSoundOn && btnSoundOff) {
+    document.body.style.overflow = 'hidden';
+
+    const closePvModal = () => {
+      pvModal.style.display = 'none';
+      document.body.style.overflow = '';
+    };
+
+    btnSoundOn.addEventListener('click', () => {
+      if (pvVideo.contentWindow) {
+        pvVideo.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+        pvVideo.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+      } else {
+        pvVideo.muted = false;
+        pvVideo.play().catch(() => {});
+      }
+      closePvModal();
+    });
+
+    btnSoundOff.addEventListener('click', () => {
+      if (pvVideo.contentWindow) {
+        pvVideo.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
+        pvVideo.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+      } else {
+        pvVideo.muted = true;
+        pvVideo.play().catch(() => {});
+      }
+      closePvModal();
+    });
+  }
 
   // --- 1. キャラクターフィルター ＆ モーダル機能 ---
   const filterBtns = document.querySelectorAll('.filter-btn');
@@ -34,10 +70,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           modalImg.style.display = 'none';
         }
-        document.getElementById('js-modal-role').textContent = card.getAttribute('data-role');
-        document.getElementById('js-modal-name').textContent = card.getAttribute('data-name');
-        document.getElementById('js-modal-element').textContent = card.getAttribute('data-element');
-        document.getElementById('js-modal-desc').textContent = card.getAttribute('data-desc');
+        document.getElementById('js-modal-role').textContent = card.getAttribute('data-role') || '';
+        document.getElementById('js-modal-name').textContent = card.getAttribute('data-name') || '';
+        document.getElementById('js-modal-element').textContent = card.getAttribute('data-element') || '';
+        document.getElementById('js-modal-desc').textContent = card.getAttribute('data-desc') || '';
         modal.classList.add('is-active');
       });
     });
@@ -61,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     {
       enTitle: "AIC", jaTitle: "集成工業システム",
-      desc: "集成工業システムは、エンドフィールド工業が誇る最も重要かつコアな技術の一つである。これにより、生産設備の小型化とユニット化を実現し、最小限の人員で完全な自動生産ラインを短時間で構築できるようになった。",
+      desc: "集成工業システムは、エンドフィールド工業が誇る最も重要かつコアな技術の一つである。これにより、生産設備の小型化とユニット化を実現し、最小限の人員で完全な自動生産ラインを短時間で構築できるようになり、基地建設の効率が飛躍的に向上した。",
       shape: "cube"
     },
     {
@@ -70,14 +106,14 @@ document.addEventListener('DOMContentLoaded', () => {
       shape: "pillar"
     },
     {
-      enTitle: "AGGELOID", jaTitle: "アングロス",
+      enTitle: "AGGELOID", jaTitle: "アンゲロス",
       desc: "アングロスとは、アンカーによって生み出された、あらゆる敵対的な物質変異体の総称である。自然物質で構成され、攻撃性を持つ。タロIIの開拓において、人類対者として重大な脅威であり「アングロス戦争」の由来ともなった。",
-      shape: "angel"
+      shape: "aggeloid"
     },
     {
-      enTitle: "LANDBREAKER", jaTitle: "ランドブレイカー",
+      enTitle: "LANDBREAKER", jaTitle: "ランドブレーカー",
       desc: "「ランドブレイカー」という集団は、多くの組織、文明の狭間で生き抜き、暴力や独自の生き残りを模索する武装陣営の総称を有する。彼らはそれぞれの目的を持っており、過激な集団もあれば交友可能な集団も存在する。",
-      shape: "humanoid"
+      shape: "landbreaker"
     }
   ];
 
@@ -86,9 +122,26 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if (canvas) {
     const ctx = canvas.getContext('2d');
-    const PARTICLE_COUNT = 3200; // 高密度粒子
+    const PARTICLE_COUNT = 5000; // 粒子数を5000に減量
     const particles = [];
-    let angleY = 0;
+    
+    // 3Dインタラクション制御変数
+    let autoAngleY = 0;
+    let userRotX = 0;
+    let userRotY = 0;
+    let zoomLevel = 1.0;
+    let isDragging = false;
+    let prevMouseX = 0;
+    let prevMouseY = 0;
+
+    // 画面外描画制御フラグ & IntersectionObserver
+    let isCanvasVisible = true;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        isCanvasVisible = entry.isIntersecting;
+      });
+    }, { threshold: 0.0 });
+    observer.observe(canvas);
 
     function resizeCanvas() {
       if (canvas.parentElement) {
@@ -109,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         this.targetY = this.y;
         this.targetZ = this.z;
         this.vx = 0; this.vy = 0; this.vz = 0;
-        this.size = Math.random() * 1.2 + 0.6;
+        this.size = Math.random() * 0.8 + 0.4;
         this.brightness = Math.random() * 0.5 + 0.5;
       }
 
@@ -121,9 +174,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       explode() {
-        this.vx = (Math.random() - 0.5) * 60;
-        this.vy = (Math.random() - 0.5) * 60;
-        this.vz = (Math.random() - 0.5) * 60;
+        this.vx = (Math.random() - 0.5) * 70;
+        this.vy = (Math.random() - 0.5) * 70;
+        this.vz = (Math.random() - 0.5) * 70;
       }
     }
 
@@ -131,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
       particles.push(new Particle());
     }
 
-    // 3D Point Cloud 形状数学モデル
+    // 3D Point Cloud 形状アルゴリズム
     function generateShapePoints(shapeType) {
       const points = [];
 
@@ -139,109 +192,249 @@ document.addEventListener('DOMContentLoaded', () => {
         let x = 0, y = 0, z = 0;
 
         if (shapeType === 'spaceship') {
-          // 帝江号
           const section = Math.random();
           if (section < 0.45) {
-            const px = Math.random() * 160;
-            const r = Math.pow((160 - px) / 160, 0.8) * 35;
+            const len = Math.random();
+            x = -200 + len * 220;
+            const subType = Math.random();
+            if (subType < 0.55) {
+              const railAngle = (Math.floor(Math.random() * 4) * Math.PI) / 2 + Math.PI / 4;
+              const radius = 22;
+              x += (Math.random() - 0.5) * 3;
+              y = Math.sin(railAngle) * radius + (Math.random() - 0.5) * 2;
+              z = Math.cos(railAngle) * radius + (Math.random() - 0.5) * 2;
+            } else if (subType < 0.85) {
+              const ringIndex = Math.floor(Math.random() * 8);
+              x = -180 + ringIndex * 26 + (Math.random() - 0.5) * 2;
+              const a = Math.random() * Math.PI * 2;
+              const radius = 22;
+              y = Math.sin(a) * radius; z = Math.cos(a) * radius;
+            } else {
+              y = (Math.random() - 0.5) * 5; z = (Math.random() - 0.5) * 5;
+            }
+          } else if (section < 0.82) {
+            x = 20 + Math.random() * 100;
+            const sub = Math.random();
+            if (sub < 0.35) {
+              x = 60 + Math.random() * 25; y = 18 + Math.random() * 52; z = (Math.random() - 0.5) * 10;
+            } else if (sub < 0.75) {
+              y = (Math.random() - 0.5) * 36; z = (Math.random() - 0.5) * 36;
+            } else {
+              y = (Math.random() - 0.5) * 24; z = ((Math.random() < 0.5 ? 1 : -1) * (22 + Math.random() * 16));
+            }
+          } else if (section < 0.94) {
+            const t = Math.random();
+            x = 120 + t * 45;
+            const radius = (1 - t) * 20;
             const a = Math.random() * Math.PI * 2;
-            x = px; y = Math.sin(a) * r * 0.6; z = Math.cos(a) * r;
-          } else if (section < 0.75) {
-            x = (Math.random() - 0.5) * 60 - 20;
-            y = (Math.random() - 0.5) * 110 - 20;
-            z = (Math.random() - 0.5) * 45;
+            y = Math.sin(a) * radius + (Math.random() - 0.5) * 2; z = Math.cos(a) * radius + (Math.random() - 0.5) * 2;
           } else {
-            x = -Math.random() * 100 - 20;
-            const r = (1 - Math.abs(x + 70) / 100) * 45 + 10;
-            const a = Math.random() * Math.PI * 2;
-            y = Math.sin(a) * r; z = Math.cos(a) * r;
+            const podId = Math.floor(Math.random() * 6);
+            x = [-140, -60, 20, 80, 110, 140][podId] + (Math.random() - 0.5) * 8;
+            y = [50, -50, 60, -45, 40, -35][podId] + (Math.random() - 0.5) * 8;
+            z = [40, -35, -50, 45, -35, 40][podId] + (Math.random() - 0.5) * 8;
           }
         } 
         else if (shapeType === 'anchor') {
-          // アンカー
-          const h = (Math.random() - 0.5) * 320;
-          y = h;
-          const profile = Math.pow(1 - Math.abs(h) / 160, 1.8);
-          const r = profile * 45;
-          const a = Math.random() * Math.PI * 2;
-          x = Math.cos(a) * r; z = Math.sin(a) * r;
-          if (Math.abs(h) < 25) { x *= 1.3; z *= 1.3; }
+          const section = Math.random();
+          if (section < 0.25) {
+            const coreY = -100;
+            if (Math.random() < 0.18) {
+              const r = Math.random() * 14;
+              const a1 = Math.random() * Math.PI * 2; const a2 = Math.random() * Math.PI;
+              x = Math.sin(a2) * Math.cos(a1) * r; y = coreY + Math.cos(a2) * r; z = Math.sin(a2) * Math.sin(a1) * r;
+            } else {
+              const ringId = Math.floor(Math.random() * 3);
+              const radius = 45 + ringId * 28 + Math.random() * 8;
+              const a = Math.random() * Math.PI * 2;
+              const rx = Math.cos(a) * radius; const rz = Math.sin(a) * radius;
+              x = rx; y = coreY + rz * Math.sin(0.35) + (Math.random() - 0.5) * 5; z = rz * Math.cos(0.35);
+            }
+          } else if (section < 0.62) {
+            const h = Math.random();
+            y = -100 + h * 240;
+            const r = Math.pow(Math.random(), 0.6) * (14 + h * 18);
+            const a = Math.random() * Math.PI * 2;
+            x = Math.cos(a) * r + (Math.random() - 0.5) * 4; z = Math.sin(a) * r + (Math.random() - 0.5) * 4;
+          } else if (section < 0.90) {
+            const spikeId = Math.floor(Math.random() * 14);
+            const angle = (spikeId / 14) * Math.PI * 2 + (Math.random() - 0.5) * 0.25;
+            const originY = -85 + Math.random() * 110;
+            const length = 30 + Math.random() * 60;
+            const progress = Math.random();
+            x = Math.cos(angle) * (16 + progress * length) + (Math.random() - 0.5) * 6;
+            y = originY - progress * (length * 0.45) + (Math.random() - 0.5) * 6;
+            z = Math.sin(angle) * (16 + progress * length) + (Math.random() - 0.5) * 6;
+          } else {
+            const a = Math.random() * Math.PI * 2; const dist = 25 + Math.random() * 95;
+            y = -120 + Math.random() * 220; x = Math.cos(a) * dist; z = Math.sin(a) * dist;
+          }
         } 
         else if (shapeType === 'cube') {
-          // AIC 集成工業
-          const r = Math.random();
-          if (r < 0.35) {
-            x = (Math.random() - 0.5) * 220; z = (Math.random() - 0.5) * 220; y = 80 + (Math.random() - 0.5) * 6;
-          } else if (r < 0.75) {
-            const h = Math.random() * 180 - 100;
-            y = h;
-            const radius = h > 30 ? 25 : 45;
-            const a = Math.random() * Math.PI * 2;
-            x = -50 + Math.cos(a) * radius; z = Math.sin(a) * radius;
+          const section = Math.random();
+          if (section < 0.25) {
+            if (Math.random() < 0.45) {
+              const trackId = Math.floor(Math.random() * 3);
+              x = (Math.random() - 0.5) * 320; y = 90 + (Math.random() - 0.5) * 4; z = -75 + trackId * 45 + (Math.random() - 0.5) * 6;
+            } else {
+              x = (Math.random() - 0.5) * 300; y = 95; z = (Math.random() - 0.5) * 240;
+            }
+          } else if (section < 0.68) {
+            const cx = (Math.floor(Math.random() * 4) - 1.5) * 65;
+            const cz = (Math.floor(Math.random() * 3) - 1.0) * 65 - 10;
+            if (Math.random() < 0.62) {
+              const h = Math.random() * 75; y = 90 - h;
+              const a = Math.random() * Math.PI * 2; const radius = 12 + Math.random() * 4;
+              x = cx + Math.cos(a) * radius; z = cz + Math.sin(a) * radius;
+            } else {
+              x = cx + (Math.random() - 0.5) * 28; y = 10 + (Math.random() - 0.5) * 14; z = cz + (Math.random() - 0.5) * 28;
+            }
+          } else if (section < 0.88) {
+            if (Math.random() < 0.28) {
+              x = -110 + Math.floor(Math.random() * 3) * 110; y = -120 + Math.random() * 210; z = -110 + (Math.random() - 0.5) * 10;
+            } else {
+              const beamT = Math.random();
+              x = -120 + Math.random() * 240 + ((Math.random() - 0.5) * 260 - (-120 + Math.random() * 240)) * beamT;
+              y = -100 + beamT * 185 + (Math.random() - 0.5) * 3;
+              z = -110 + (75 - (-110)) * beamT;
+            }
           } else {
-            const b = Math.floor(Math.random() * 3);
-            x = 30 + b * 35 + (Math.random() - 0.5) * 25;
-            y = 80 - Math.random() * (40 + b * 20);
-            z = (Math.random() - 0.5) * 30;
+            x = (Math.random() - 0.5) * 280; y = 78 + (Math.random() - 0.5) * 8; z = -75 + Math.floor(Math.random() * 3) * 45 + (Math.random() - 0.5) * 8;
           }
         } 
         else if (shapeType === 'pillar') {
-          // 天師杭
-          const r = Math.random();
-          if (r < 0.25) {
-            x = (Math.random() - 0.5) * 180; z = (Math.random() - 0.5) * 180; y = 110;
-          } else if (r < 0.55) {
-            const h = Math.random() * 100 + 10;
-            y = h;
-            const twist = h * 0.05;
-            const radius = (120 - h) * 0.3;
+          const section = Math.random();
+          if (section < 0.22) {
+            const h = Math.random(); y = 100 - h * 240;
+            const a = Math.random() * Math.PI * 2; const radius = 7 + Math.random() * 6;
+            x = Math.cos(a) * radius + (Math.random() - 0.5) * 3; z = Math.sin(a) * radius + (Math.random() - 0.5) * 3;
+          } else if (section < 0.50) {
+            const h = Math.random(); y = 100 - h * 130;
+            const twistAngle = h * Math.PI * 2.5; const trunkRadius = 18 + (1 - h) * 16;
             const a = Math.random() * Math.PI * 2;
-            x = Math.cos(a + twist) * radius; z = Math.sin(a + twist) * radius;
-          } else {
-            const branchId = Math.floor(Math.random() * 8);
-            const angle = (branchId / 8) * Math.PI * 2;
-            const dist = Math.random() * 110 + 20;
-            y = 10 - Math.pow(dist / 110, 0.8) * 90;
-            x = Math.cos(angle) * dist + (Math.random() - 0.5) * 20;
-            z = Math.sin(angle) * dist + (Math.random() - 0.5) * 20;
-          }
-        } 
-        else if (shapeType === 'angel') {
-          // アングロス
-          const r = Math.random();
-          if (r < 0.25) {
-            y = Math.random() * 80 + 20;
-            const radius = (100 - y) * 0.15 + 3;
-            const a = Math.random() * Math.PI * 2;
-            x = Math.cos(a) * radius; z = Math.sin(a) * radius;
-          } else if (r < 0.85) {
-            const wingSide = (Math.random() < 0.5) ? 1 : -1;
+            x = Math.cos(twistAngle) * 10 + Math.cos(a) * trunkRadius + (Math.random() - 0.5) * 5;
+            z = Math.sin(twistAngle) * 10 + Math.sin(a) * trunkRadius + (Math.random() - 0.5) * 5;
+          } else if (section < 0.85) {
+            const branchId = Math.floor(Math.random() * 6);
+            const baseAngle = (branchId / 6) * Math.PI * 2;
             const t = Math.random();
-            x = t * 130 * wingSide;
-            y = -t * 90 + (Math.random() - 0.5) * 25;
-            z = (Math.random() - 0.5) * (30 + t * 20);
+            const spreadRadius = 18 + Math.pow(t, 0.85) * 125;
+            const branchY = -20 - Math.sin(t * Math.PI * 0.5) * 95;
+            const finalAngle = baseAngle + (Math.random() < 0.4 ? 1 : -1) * (t * 0.45);
+            x = Math.cos(finalAngle) * spreadRadius + Math.sin(t * Math.PI * 3) * 10 + (Math.random() - 0.5) * (10 - t * 6);
+            y = branchY + (Math.random() - 0.5) * (10 - t * 6);
+            z = Math.sin(finalAngle) * spreadRadius + Math.sin(t * Math.PI * 3) * 10 + (Math.random() - 0.5) * (10 - t * 6);
           } else {
-            x = (Math.random() - 0.5) * 180; y = (Math.random() - 0.5) * 160 - 20; z = (Math.random() - 0.5) * 100;
+            if (Math.random() < 0.45) {
+              const tier = Math.floor(Math.random() * 3);
+              x = (Math.random() - 0.5) * (110 - tier * 25); y = 95 + tier * 10; z = (Math.random() - 0.5) * (110 - tier * 25);
+            } else {
+              const a = Math.random() * Math.PI * 2; const r = 25 + Math.random() * 115;
+              x = Math.cos(a) * r; y = -130 + Math.random() * 170; z = Math.sin(a) * r;
+            }
           }
         } 
-        else {
-          // ランドブレイカー
-          const r = Math.random();
-          if (r < 0.2) {
-            if (Math.random() < 0.4) {
-              x = -70 + (Math.random() - 0.5) * 8; y = (Math.random() - 0.5) * 120 + 10; z = -20 + (Math.random() - 0.5) * 8;
-            } else {
-              x = -70 + (Math.random() - 0.5) * 45; y = 50 + (Math.random() - 0.5) * 45; z = -20 + (Math.random() - 0.5) * 45;
-            }
-          } else if (r < 0.5) {
-            y = Math.random() * 80 + 30;
-            const legSide = Math.random() < 0.5 ? -1 : 1;
-            x = (20 + (y - 30) * 0.3) * legSide + (Math.random() - 0.5) * 15;
-            z = (Math.random() - 0.5) * 25;
+        else if (shapeType === 'aggeloid' || shapeType === 'angel') {
+          // アンゲロス (元の構造)
+          const section = Math.random();
+          if (section < 0.35) {
+            const ringId = Math.floor(Math.random() * 2);
+            const r = 35 + ringId * 25 + (Math.random() - 0.5) * 6;
+            const a = Math.random() * Math.PI * 2;
+            x = Math.cos(a) * r;
+            y = Math.sin(a) * r;
+            z = (Math.random() - 0.5) * 8;
+          } else if (section < 0.75) {
+            const h = (Math.random() - 0.5) * 160;
+            const r = (1 - Math.abs(h) / 80) * 32;
+            const a = Math.random() * Math.PI * 2;
+            x = Math.cos(a) * r + (Math.random() - 0.5) * 4;
+            y = h;
+            z = Math.sin(a) * r + (Math.random() - 0.5) * 4;
           } else {
-            y = (Math.random() - 0.5) * 90 - 20;
-            const width = (y < -30) ? 75 : 50;
-            x = (Math.random() - 0.5) * width; z = (Math.random() - 0.5) * 40;
+            const side = Math.random() < 0.5 ? -1 : 1;
+            const t = Math.random();
+            x = side * (30 + t * 85) + (Math.random() - 0.5) * 10;
+            y = -60 + t * 120 + (Math.random() - 0.5) * 10;
+            z = (Math.random() - 0.5) * 35;
+          }
+        } 
+        else if (shapeType === 'landbreaker') {
+          // ランドブレーカー
+          const section = Math.random();
+          if (section < 0.28) {
+            const h = Math.random();
+            y = -45 + h * 65;
+            const vTaper = (1 - h * 0.35); 
+            const chestR = 44 * vTaper;
+            const a = Math.random() * Math.PI * 2;
+            x = Math.cos(a) * chestR + (Math.random() - 0.5) * 6;
+            z = Math.sin(a) * (chestR * 0.75) + (Math.random() - 0.5) * 6;
+          } 
+          else if (section < 0.48) {
+            const side = Math.random() < 0.5 ? -1 : 1;
+            const part = Math.random();
+            if (part < 0.5) {
+              const r = 24 + Math.random() * 8;
+              const a1 = Math.random() * Math.PI * 2;
+              const a2 = Math.random() * Math.PI;
+              x = side * 56 + Math.sin(a2) * Math.cos(a1) * r;
+              y = -45 + Math.cos(a2) * r;
+              z = Math.sin(a2) * Math.sin(a1) * r;
+            } else {
+              const t = Math.random();
+              x = side * (42 + t * 35);
+              y = -50 - t * 45;
+              z = (Math.random() - 0.5) * 30;
+            }
+          } 
+          else if (section < 0.68) {
+            const armSide = Math.random() < 0.5 ? -1 : 1;
+            const t = Math.random();
+            const armThickness = 18 * (1 - t * 0.2);
+            const a = Math.random() * Math.PI * 2;
+
+            if (armSide === 1) {
+              x = 58 + Math.cos(a) * armThickness + t * 20;
+              y = -35 + t * 75;
+              z = Math.sin(a) * armThickness;
+            } else {
+              x = -58 + Math.cos(a) * armThickness - t * 15;
+              y = -35 + t * 65;
+              z = 15 + Math.sin(a) * armThickness;
+            }
+          } 
+          else if (section < 0.80) {
+            const t = Math.random();
+            x = -50 - t * 70;
+            y = 20 + t * 40;
+            z = 20 + (Math.random() - 0.5) * 14;
+          } 
+          else if (section < 0.93) {
+            const legSide = Math.random() < 0.5 ? -1 : 1;
+            const t = Math.random();
+            const legThickness = 20 * (1 - t * 0.25);
+            const a = Math.random() * Math.PI * 2;
+            x = legSide * (24 + t * 15) + Math.cos(a) * legThickness;
+            y = 20 + t * 70;
+            z = Math.sin(a) * legThickness;
+          } 
+          else {
+            if (Math.random() < 0.4) {
+              const r = Math.random() * 12;
+              const a1 = Math.random() * Math.PI * 2;
+              const a2 = Math.random() * Math.PI;
+              x = Math.sin(a2) * Math.cos(a1) * r;
+              y = -60 + Math.cos(a2) * r;
+              z = Math.sin(a2) * Math.sin(a1) * r;
+            } else {
+              const tubeId = Math.floor(Math.random() * 4);
+              const tubeX = -9 + tubeId * 6;
+              const t = Math.random();
+              x = tubeX;
+              y = -52 + t * 35;
+              z = 16 + Math.sin(t * Math.PI) * 6;
+            }
           }
         }
 
@@ -260,48 +453,115 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // アニメーション描画ループ
+    // --- 3D ドラッグ＆ズーム＆クリック爆散インタラクション ---
+    canvas.style.cursor = 'grab';
+
+    canvas.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      canvas.style.cursor = 'grabbing';
+      prevMouseX = e.clientX;
+      prevMouseY = e.clientY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - prevMouseX;
+      const deltaY = e.clientY - prevMouseY;
+      userRotY += deltaX * 0.008;
+      userRotX += deltaY * 0.008;
+      prevMouseX = e.clientX;
+      prevMouseY = e.clientY;
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        canvas.style.cursor = 'grab';
+      }
+    });
+
+    canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        isDragging = true;
+        prevMouseX = e.touches[0].clientX;
+        prevMouseY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+      if (!isDragging || e.touches.length !== 1) return;
+      const deltaX = e.touches[0].clientX - prevMouseX;
+      const deltaY = e.touches[0].clientY - prevMouseY;
+      userRotY += deltaX * 0.008;
+      userRotX += deltaY * 0.008;
+      prevMouseX = e.touches[0].clientX;
+      prevMouseY = e.touches[0].clientY;
+    }, { passive: true });
+
+    window.addEventListener('touchend', () => { isDragging = false; });
+
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      zoomLevel -= e.deltaY * 0.0012;
+      zoomLevel = Math.min(Math.max(0.5, zoomLevel), 2.2);
+    }, { passive: false });
+
+    canvas.addEventListener('click', () => {
+      particles.forEach(p => p.explode());
+    });
+
+    // --- アニメーション描画ループ ---
     function animate() {
+      requestAnimationFrame(animate);
+
+      // 画面外にある時は処理を行わずスキップ
+      if (!isCanvasVisible) return;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      angleY += 0.007;
+      if (!isDragging) {
+        autoAngleY += 0.006;
+      }
+
+      const totalAngleY = autoAngleY + userRotY;
+      const totalAngleX = userRotX;
 
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
       const fov = 340;
 
-      // キャンバス最小幅に応じた動的スケーリング
       const minDimension = Math.min(canvas.width, canvas.height);
-      const responsiveScale = Math.max(0.9, minDimension / 330);
+      const responsiveScale = Math.max(0.9, minDimension / 330) * zoomLevel;
 
       ctx.globalCompositeOperation = 'lighter';
+
+      const cosY = Math.cos(totalAngleY); const sinY = Math.sin(totalAngleY);
+      const cosX = Math.cos(totalAngleX); const sinX = Math.sin(totalAngleX);
 
       particles.forEach(p => {
         p.update();
 
-        const cosY = Math.cos(angleY);
-        const sinY = Math.sin(angleY);
+        const x1 = p.x * cosY - p.z * sinY;
+        const z1 = p.x * sinY + p.z * cosY;
+        
+        const y2 = p.y * cosX - z1 * sinX;
+        const z2 = p.y * sinX + z1 * cosX;
 
-        const rx = p.x * cosY - p.z * sinY;
-        const rz = p.x * sinY + p.z * cosY;
-        const ry = p.y;
+        const scale = fov / (fov + z2 + 220);
 
-        const scale = fov / (fov + rz + 220);
+        const screenX = centerX + x1 * scale * responsiveScale;
+        const screenY = centerY + y2 * scale * responsiveScale;
 
-        const screenX = centerX + rx * scale * responsiveScale;
-        const screenY = centerY + ry * scale * responsiveScale;
-
-        const alpha = Math.min(0.9, Math.max(0.1, (rz + 180) / 320)) * p.brightness;
+        const alpha = Math.min(0.95, Math.max(0.12, (z2 + 180) / 320)) * p.brightness;
         ctx.fillStyle = `rgba(240, 245, 255, ${alpha})`;
 
         ctx.beginPath();
-        const particleSize = Math.max(0.7, p.size * scale * (responsiveScale * 0.75));
+        const particleSize = Math.max(0.4, p.size * scale * (responsiveScale * 0.75));
         ctx.arc(screenX, screenY, particleSize, 0, Math.PI * 2);
         ctx.fill();
       });
 
       ctx.globalCompositeOperation = 'source-over';
-      requestAnimationFrame(animate);
     }
 
     // UI切り替え制御
@@ -319,6 +579,10 @@ document.addEventListener('DOMContentLoaded', () => {
         progressBar.style.marginLeft = `${step * index}%`;
       }
 
+      userRotX = 0;
+      userRotY = 0;
+      zoomLevel = 1.0;
+
       updateParticleTargets(data.shape);
     }
 
@@ -334,6 +598,16 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUI(currentIndex);
       });
     }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') {
+        currentIndex = (currentIndex - 1 + loreData.length) % loreData.length;
+        updateUI(currentIndex);
+      } else if (e.key === 'ArrowRight') {
+        currentIndex = (currentIndex + 1) % loreData.length;
+        updateUI(currentIndex);
+      }
+    });
 
     updateUI(0);
     animate();
